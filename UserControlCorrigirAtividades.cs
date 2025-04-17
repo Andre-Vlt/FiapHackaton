@@ -103,14 +103,23 @@ namespace Corretor
                 MessageBox.Show("ATENÇÃO!\nÉ necessário selecionar os arquivos de perguntas e os gabaritos!","ATENÇÃO",MessageBoxButtons.OK,MessageBoxIcon.Exclamation);
                 return;
             }
-            
+            List<string> respostasPrint= new();
             //FAZER CORREÇÃO DE CADA GABARITO:
             foreach (var arquivo in files)
             {
                 var img = converter.ConvertPdfToImage(arquivo);
                 //Fazer OCR
-                gabaritoOCR.ProcessarAlternativas(img);              
+                respostasPrint = gabaritoOCR.ProcessarAlternativas(img);
                 //Chamar metodo para fazer correção
+
+                foreach (var resposta in respostasPrint)
+                {
+                    if (resposta == "Não marcada")
+                        continue;
+                    else
+                        MessageBox.Show($"Alternativa: {resposta}");
+                }
+ 
             }
         }
     }
