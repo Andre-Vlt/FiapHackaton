@@ -11,7 +11,7 @@ namespace Corretor.PdfTreatment
     {
         private TesseractWrapper _tesseractWrapper;
 
-        private readonly List<int> coordenadasX = new List<int> { 109, 126, 142, 159, 175 }; //A, B, C, D, E
+        private readonly List<int> coordenadasX = new List<int> { 104, 126, 142, 159, 175 }; //A, B, C, D, E
         private readonly List<int> coordenadasY = new List<int> { 174, 198, 223, 245, 269, 293, 317, 340, 364, 388, 412, 435, 459, 483, 507, 531, 554, 579, 601, 625, 649, 673 }; //1, 2, 3, 4, 5...
 
         public GabaritoProcessor(string tessDataPath)

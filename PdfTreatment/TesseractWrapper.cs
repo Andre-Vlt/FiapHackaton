@@ -11,7 +11,7 @@ namespace Corretor.PdfTreatment
         private TesseractEngine _ocrEngine;
         public void StartTesseract(string tessDataPath)
         {
-            _ocrEngine = new TesseractEngine(tessDataPath, "por", EngineMode.Default);
+            _ocrEngine = new TesseractEngine(tessDataPath, "eng", EngineMode.Default);
         }
 
         public string ProcessBitmap(Bitmap bitmap)
