@@ -1,4 +1,7 @@
-﻿using Corretor.PdfTreatment;
+﻿using Corretor.ApiCalls;
+using Corretor.PdfTreatment;
+using Microsoft.VisualBasic.ApplicationServices;
+using PdfiumViewer;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Corretor
 {
@@ -18,7 +22,9 @@ namespace Corretor
             InitializeComponent();
         }
 
-        private List<string> files;
+        private OpenAi openAi = new OpenAi();
+        private List<string> files = new();
+        private PdfDocument? questionsFile = null;
         private string[] SelecionarArquivos()
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -67,6 +73,7 @@ namespace Corretor
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 string arquivoPDF = openFileDialog.FileName;
+                PdfDocument doc = PdfDocument.Load(arquivoPDF);
                 Label lbl = new Label();
                 lbl.Text = Path.GetFileName(arquivoPDF);
                 lbl.AutoSize = true;
@@ -74,15 +81,35 @@ namespace Corretor
                 lbl.BackColor = Color.LightGray;
                 lbl.Margin = new Padding(5);
                 flowQuestions.Controls.Add(lbl);
+
+                questionsFile = doc;
             }
         }
 
-        private void btn_Corrigir_Click(object sender, EventArgs e)
+        private async void btn_Corrigir_Click(object sender, EventArgs e)
         {
+
+            
+            var gabaritoOCR = new GabaritoProcessor(@"C:\Users\ext.andresilva\tessdata");
             PdfToImage converter = new PdfToImage();
+            
+            
+            string respostas = "";
+            //TRANSFORMAR QUESTOES EM STRING E CHAMAR API PARA TER AS RESPOSTAS CORRETAS:
+            if (questionsFile != null && files.Count > 0)
+                respostas = await openAi.ObtemRespostasCorretas(GetPdfText.GetTextFromPdf(questionsFile));
+            else
+            {
+                MessageBox.Show("ATENÇÃO!\nÉ necessário selecionar os arquivos de perguntas e os gabaritos!","ATENÇÃO",MessageBoxButtons.OK,MessageBoxIcon.Exclamation);
+                return;
+            }
+            
+            //FAZER CORREÇÃO DE CADA GABARITO:
             foreach (var arquivo in files)
             {
-                converter.ConvertPdfToImage(arquivo);
+                var img = converter.ConvertPdfToImage(arquivo);
+                //Fazer OCR
+                gabaritoOCR.ProcessarAlternativas(img);              
                 //Chamar metodo para fazer correção
             }
         }

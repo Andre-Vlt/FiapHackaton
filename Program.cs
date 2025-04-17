@@ -8,10 +8,10 @@ namespace Corretor
         [STAThread]
         static void Main()
         {
+            Env.TraversePath().Load();
             SqLite banco = new SqLite();
             banco.CriarBancoSeNaoExistir();
             ApplicationConfiguration.Initialize();
-            Env.Load();
             Application.Run(new Form1());
         }
     }

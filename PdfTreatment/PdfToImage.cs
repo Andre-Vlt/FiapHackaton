@@ -17,6 +17,7 @@ namespace Corretor.PdfTreatment
             using var image = document.Render(pageNumber, 300, 300, true);
 
             return new Bitmap(image);
+
         }
     }
 }
