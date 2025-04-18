@@ -90,37 +90,58 @@ namespace Corretor
         {
 
             
-            var gabaritoOCR = new GabaritoProcessor(@"C:\Users\ext.andresilva\tessdata");
+            var gabaritoOCR = new GabaritoProcessor();
             PdfToImage converter = new PdfToImage();
             
             
-            string respostas = "";
+            string respostasCorretas = "";
             //TRANSFORMAR QUESTOES EM STRING E CHAMAR API PARA TER AS RESPOSTAS CORRETAS:
             if (questionsFile != null && files.Count > 0)
-                respostas = await openAi.ObtemRespostasCorretas(GetPdfText.GetTextFromPdf(questionsFile));
+                respostasCorretas = await openAi.ObtemRespostasCorretas(GetPdfText.GetTextFromPdf(questionsFile));
             else
             {
                 MessageBox.Show("ATENÇÃO!\nÉ necessário selecionar os arquivos de perguntas e os gabaritos!","ATENÇÃO",MessageBoxButtons.OK,MessageBoxIcon.Exclamation);
                 return;
             }
-            List<string> respostasPrint= new();
+            List<string> respostasAluno= new();
             //FAZER CORREÇÃO DE CADA GABARITO:
             foreach (var arquivo in files)
             {
                 var img = converter.ConvertPdfToImage(arquivo);
-                //Fazer OCR
-                respostasPrint = gabaritoOCR.ProcessarAlternativas(img);
+                //Obter respostas aluno:
+                respostasAluno = gabaritoOCR.ProcessarAlternativas(img);
                 //Chamar metodo para fazer correção
+                var respostasCorretasAluno = ExtrairAlternativa(respostasCorretas);
 
-                foreach (var resposta in respostasPrint)
+                int acertos = 0;
+
+                for (int i = 0; i < respostasAluno.Count; i++)
                 {
-                    if (resposta == "Não marcada")
-                        continue;
-                    else
-                        MessageBox.Show($"Alternativa: {resposta}");
+                    if (respostasAluno[i].Equals(respostasCorretas[i]))
+                    {
+                        acertos++;
+                    }
                 }
- 
+                //Exibir resultado
+                MessageBox.Show($"O aluno acertou {acertos} de {respostasAluno.Count} questões.\n\nRespostas corretas: {string.Join(", ", respostasCorretasAluno)}\nRespostas do aluno: {string.Join(", ", respostasAluno)}", "Resultado", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+        }
+
+        private List<string> ExtrairAlternativa(string resposta)
+        {
+            var pares = resposta.Split(',');
+            var alternativas = new List<string>();
+
+            foreach (var par in pares)
+            {
+                string trimmed = par.Trim();
+                if (!string.IsNullOrEmpty(trimmed))
+                {
+                    string alternativa = trimmed[^1].ToString().ToUpper();
+                    alternativas.Add(alternativa);
+                }
+            }
+            return alternativas;
         }
     }
 }
